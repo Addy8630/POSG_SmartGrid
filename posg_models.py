@@ -12,11 +12,12 @@ Zero-smoothing (ε = 0.005) prevents belief collapse.
 """
 
 import numpy as np
+import random
 from posg_types import (
     S, O, NUM_STATES, NUM_OBS,
     NormalA, ReconA, CompA, WeapA, ExecA,
     NormalD, ReconD, CompD, WeapD, ExecD,
-    NUM_DEF_ACTIONS,
+    NUM_DEF_ACTIONS, AttackerAction, DefenderAction,
 )
 
 EPS = 0.005   # minimum probability — prevents belief collapse
@@ -296,3 +297,17 @@ PAYOFF = {s: compute_payoff_matrix(s) for s in S}
 def get_payoff(stage: S) -> np.ndarray:
     """Return pre-computed defender payoff matrix for stage."""
     return PAYOFF[stage]
+
+
+# ════════════════════════════════════════════════════════════
+# RANDOM ACTION UTILITIES
+# ════════════════════════════════════════════════════════════
+
+def random_attacker():
+    """Return random attacker action from AttackerAction enum."""
+    return random.choice(list(AttackerAction))
+
+
+def random_defender():
+    """Return random defender action from DefenderAction enum."""
+    return random.choice(list(DefenderAction))

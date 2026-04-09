@@ -6,7 +6,7 @@ Import this module everywhere. Never use raw strings or ints
 to reference states, actions, or observations.
 """
 
-from enum import IntEnum
+from enum import IntEnum, Enum
 from dataclasses import dataclass
 from typing import Optional
 import numpy as np
@@ -24,6 +24,9 @@ class S(IntEnum):
     EXECUTE    = 4
 
 NUM_STATES = len(S)
+
+# Alias for convenience
+Stage = S
 
 STATE_NAMES = {
     S.NORMAL:     "Normal",
@@ -250,3 +253,41 @@ class RawObs:
             return O.SERVICE_PROBE
 
         return O.NORMAL_TRAFFIC
+
+
+# ─────────────────────────────────────────────────────────────
+# SIMPLIFIED ATTACKER & DEFENDER ACTION ENUMS
+# ─────────────────────────────────────────────────────────────
+
+class AttackerAction(Enum):
+    """High-level attacker action types."""
+    RECON = 0
+    ATTACK = 1
+    IDLE = 2
+
+
+class DefenderAction(Enum):
+    """High-level defender action types."""
+    MONITOR = 0
+    PATCH = 1
+    IGNORE = 2
+
+
+# ─────────────────────────────────────────────────────────────
+# GAME STATE & BELIEF STATE DATACLASSES
+# ─────────────────────────────────────────────────────────────
+
+@dataclass
+class GameState:
+    """Tracks the current game state variables."""
+    compromised: bool = False
+    detected: bool = False
+    step: int = 0
+    stage: S = S.RECON
+
+
+@dataclass
+class BeliefState:
+    """Defender's belief state about the attacker."""
+    attack_prob: float = 0.5  # Defender belief about attacker likelihood
+    threat_level: float = 0.2

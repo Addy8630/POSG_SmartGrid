@@ -22,13 +22,15 @@ Public API (identical to v1):
 
 import numpy as np
 import logging
+import random
 from dataclasses import dataclass
 from typing import Optional
 
 from posg_types import (
     S, O, NUM_STATES, INITIAL_BELIEF,
     STATE_NAMES, OBS_NAMES, DEFENDER_ACTION_NAMES,
-    NUM_DEF_ACTIONS, RawObs,
+    NUM_DEF_ACTIONS, RawObs, GameState, BeliefState,
+    AttackerAction, DefenderAction, Stage,
 )
 from posg_models import (
     OBSERVATION_MODEL, TRANSITION_MODEL, get_payoff, EPS,
@@ -353,3 +355,154 @@ class POSGEngine:
             f"{r.best_action_name:<18} EU={r.expected_utility:+.3f} | "
             f"H={r.belief_entropy:.3f}"
         )
+
+
+# ─────────────────────────────────────────────────────────────
+# POSG GAME ENVIRONMENT
+# ─────────────────────────────────────────────────────────────
+
+class POSGEnvironment:
+    """
+    Simplified POSG game environment for attacker vs defender interactions.
+    Manages state transitions, reward calculation, and belief updates.
+    
+    Use this for training agents against deterministic/stochastic game logic.
+    """
+
+    def __init__(self):
+        """Initialize game environment with default GameState and BeliefState."""
+        self.state = GameState()
+        self.belief = BeliefState()
+        log.info("POSGEnvironment initialized")
+
+    def reset(self):
+        """Reset environment to initial state."""
+        self.state = GameState()
+        self.belief = BeliefState()
+        return self.state
+
+    def step(self, attacker_action, defender_action):
+        """
+        Execute one step of the game.
+        
+        Args:
+            attacker_action: AttackerAction enum value
+            defender_action: DefenderAction enum value
+            
+        Returns:
+            (state, (reward_attacker, reward_defender), done)
+                state: updated GameState
+                rewards: tuple of (attacker_reward, defender_reward)
+                done: bool indicating terminal state
+        """
+        reward_attacker = 0
+        reward_defender = 0
+
+        current_stage = self.state.stage
+
+        if current_stage == Stage.NORMAL:
+            if attacker_action == AttackerAction.RECON:
+                base_prob = 0.7
+                if defender_action == DefenderAction.PATCH:
+                    base_prob -= 0.2
+                elif defender_action == DefenderAction.MONITOR:
+                    base_prob -= 0.1
+                base_prob += self.belief.threat_level * 0.1
+                success = random.random() < base_prob
+                print(f"[DEBUG] NORMAL→RECON success prob: {base_prob:.2f}")
+                if success:
+                    self.state.stage = Stage.RECON
+                    reward_attacker += 1
+                else:
+                    reward_defender += 2
+
+        elif current_stage == Stage.RECON:
+            if attacker_action in (AttackerAction.RECON, AttackerAction.ATTACK):
+                base_prob = 0.8
+                if defender_action == DefenderAction.PATCH:
+                    base_prob -= 0.2
+                elif defender_action == DefenderAction.MONITOR:
+                    base_prob -= 0.15
+                base_prob += self.belief.threat_level * 0.15
+                success = random.random() < base_prob
+                print(f"[DEBUG] RECON→COMPROMISE success prob: {base_prob:.2f}")
+                if success:
+                    self.state.stage = Stage.COMPROMISE
+                    reward_attacker += 2
+                else:
+                    reward_defender += 3
+                    self.belief.threat_level = min(1.0, self.belief.threat_level + 0.05)
+
+        elif current_stage == Stage.COMPROMISE:
+            if attacker_action == AttackerAction.ATTACK:
+                base_prob = 0.75
+                if defender_action == DefenderAction.PATCH:
+                    base_prob -= 0.25
+                elif defender_action == DefenderAction.MONITOR:
+                    base_prob -= 0.2
+                base_prob += self.belief.threat_level * 0.2
+                success = random.random() < base_prob
+                print(f"[DEBUG] COMPROMISE→WEAPONIZE success prob: {base_prob:.2f}")
+                if success:
+                    self.state.stage = Stage.WEAPONIZE
+                    reward_attacker += 3
+                else:
+                    reward_defender += 3
+                    self.belief.threat_level = min(1.0, self.belief.threat_level + 0.05)
+
+        elif current_stage == Stage.WEAPONIZE:
+            if attacker_action == AttackerAction.ATTACK:
+                base_prob = 0.8
+                if defender_action == DefenderAction.PATCH:
+                    base_prob -= 0.2
+                elif defender_action == DefenderAction.MONITOR:
+                    base_prob -= 0.25
+                base_prob += self.belief.threat_level * 0.2
+                success = random.random() < base_prob
+                print(f"[DEBUG] WEAPONIZE→EXECUTE success prob: {base_prob:.2f}")
+                if success:
+                    self.state.stage = Stage.EXECUTE
+                    reward_attacker += 4
+                else:
+                    reward_defender += 3
+                    self.belief.threat_level = min(1.0, self.belief.threat_level + 0.05)
+
+        elif current_stage == Stage.EXECUTE:
+            if attacker_action == AttackerAction.ATTACK:
+                base_prob = 0.65
+                if defender_action == DefenderAction.PATCH:
+                    base_prob -= 0.2
+                elif defender_action == DefenderAction.MONITOR:
+                    base_prob -= 0.3
+                base_prob += self.belief.threat_level * 0.25
+                success = random.random() < base_prob
+                print(f"[DEBUG] EXECUTE success prob: {base_prob:.2f}")
+                if success:
+                    self.state.compromised = True
+                    reward_attacker += 6
+                    print("🔥 EXECUTION SUCCESS — attack completed")
+                else:
+                    reward_defender += 4
+                    print("🛡️ Execution blocked")
+
+        # --- DETECTION ---
+        if defender_action == DefenderAction.MONITOR:
+            detected = random.random() < 0.7
+            self.state.detected = detected
+            if detected:
+                reward_defender += 5
+                reward_attacker -= 3
+
+        # --- BELIEF UPDATE (POSG CORE) ---
+        if attacker_action == AttackerAction.ATTACK:
+            self.belief.attack_prob = min(1.0, self.belief.attack_prob + 0.2)
+            self.belief.threat_level = min(1.0, self.belief.threat_level + 0.1)
+        else:
+            self.belief.attack_prob = max(0.0, self.belief.attack_prob - 0.1)
+            self.belief.threat_level = max(0.0, self.belief.threat_level - 0.05)
+
+        # --- STEP COUNT ---
+        self.state.step += 1
+        done = self.state.step >= 10 or self.state.compromised
+
+        return self.state, (reward_attacker, reward_defender), done

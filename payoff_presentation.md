@@ -7,7 +7,7 @@
 - Strategic Decision Framework
 - Cost-Benefit Analysis for Cyber Defense
 
-*Presenter: AI Assistant*
+
 
 ---
 

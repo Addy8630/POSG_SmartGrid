@@ -1,0 +1,58 @@
+<mxfile host="app.diagrams.net" modified="2026-04-15T00:00:00.000Z" agent="5.0 (X11)" etag="hfeTBRjN3ZI0cn0ry5Nq" version="20.1.5" type="device">
+  <diagram id="fA9Vj2hZd3K6G4mN7zQ1" name="POSG Game Model">
+    <mxGraphModel dx="1386" dy="932" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="2" value="NORMAL&#10;Attacker: IDLE&#10;Defender: MONITOR, IGNORE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="60" y="60" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="RECON&#10;Attacker: SCAN&#10;Defender: MONITOR, PATCH" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="320" y="60" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="4" value="INSTALLATION&#10;Attacker: PREPARE_PAYLOAD&#10;Defender: PATCH, BLOCK" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="580" y="60" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="INFECTION&#10;Attacker: EXPLOIT&#10;Defender: BLOCK, MONITOR" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="200" y="220" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="6" value="EXECUTION&#10;Attacker: EXECUTE_ATTACK&#10;Defender: BLOCK, PATCH" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="460" y="220" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="DONE&#10;Terminal state" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5d5d5;strokeColor=#808080;" vertex="1" parent="1">
+          <mxGeometry x="330" y="380" width="200" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;endArrow=block;" edge="1" parent="1" source="2" target="3">
+          <mxGeometry relative="1" as="geometry"/>
+          <mxCell value="Attacker: SCAN&#10;Defender: MONITOR / IGNORE" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="8">
+            <mxGeometry x="0.5" y="0" width="160" height="40" as="geometry" relative="1"/>
+          </mxCell>
+        </mxCell>
+        <mxCell id="9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;endArrow=block;" edge="1" parent="1" source="3" target="4">
+          <mxGeometry relative="1" as="geometry"/>
+          <mxCell value="Attacker: PREPARE_PAYLOAD&#10;Defender: PATCH / BLOCK" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="9">
+            <mxGeometry x="0.5" y="0" width="160" height="40" as="geometry" relative="1"/>
+          </mxCell>
+        </mxCell>
+        <mxCell id="10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;endArrow=block;" edge="1" parent="1" source="4" target="5">
+          <mxGeometry relative="1" as="geometry"/>
+          <mxCell value="Attacker: EXPLOIT&#10;Defender: BLOCK / MONITOR" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="10">
+            <mxGeometry x="0.5" y="0" width="160" height="40" as="geometry" relative="1"/>
+          </mxCell>
+        </mxCell>
+        <mxCell id="11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;endArrow=block;" edge="1" parent="1" source="5" target="6">
+          <mxGeometry relative="1" as="geometry"/>
+          <mxCell value="Attacker: EXECUTE_ATTACK&#10;Defender: BLOCK / PATCH" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="11">
+            <mxGeometry x="0.5" y="0" width="160" height="40" as="geometry" relative="1"/>
+          </mxCell>
+        </mxCell>
+        <mxCell id="12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;endArrow=block;" edge="1" parent="1" source="6" target="7">
+          <mxGeometry relative="1" as="geometry"/>
+          <mxCell value="Transition to DONE" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="12">
+            <mxGeometry x="0.5" y="0" width="120" height="30" as="geometry" relative="1"/>
+          </mxCell>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

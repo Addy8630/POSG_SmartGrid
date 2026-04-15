@@ -173,11 +173,11 @@ _ONOS_RULES = {
                    1: ("REDIRECT_HONEYPOT",     "10.0.1.99"),
                    2: ("RATE_LIMIT_H1",         "10.0.1.1"),
                    3: ("REDIRECT_HONEYPOT+IDS", "10.0.1.99")},
-    S.COMPROMISE: {0: ("ALLOW_ALL",             None),
+    S.INFECTION: {0: ("ALLOW_ALL",             None),
                    1: ("ENFORCE_MFA",           "10.0.2.5"),
                    2: ("WHITELIST_MODBUS",      "10.0.1.4"),
                    3: ("PATCH_AND_MONITOR",     "10.0.1.4")},
-    S.WEAPONIZE:  {0: ("ALLOW_ALL",             None),
+    S.INSTALLATION:  {0: ("ALLOW_ALL",             None),
                    1: ("PHYSICS_VALIDATION",    "10.0.1.2"),
                    2: ("ISOLATE_IBR",           "10.0.1.4"),
                    3: ("SANDBOX_MODBUS",        "10.0.1.4")},
@@ -206,8 +206,8 @@ def dispatch_onos(stage: S, aD_idx: int, dry_run: bool = True) -> dict:
 # ─────────────────────────────────────────────────────────────
 
 _VED = {S.RECON:      (-2,  12),
-        S.COMPROMISE: (-3,   8),
-        S.WEAPONIZE:  (-5,   5),
+        S.INFECTION: (-3,   8),
+        S.INSTALLATION:  (-5,   5),
         S.EXECUTE:    (-8,   0)}
 
 def compute_ved() -> dict:
@@ -226,7 +226,7 @@ def backward_induction(b: np.ndarray, gamma: float = 0.9) -> dict:
     """
     V         = {}
     best_acts = {}
-    stages    = [S.EXECUTE, S.WEAPONIZE, S.COMPROMISE, S.RECON]
+    stages    = [S.EXECUTE, S.INSTALLATION, S.INFECTION, S.RECON]
 
     for s in stages:
         eu_arr  = expected_utility_vector(b, s)
@@ -401,7 +401,7 @@ class POSGEnvironment:
         current_stage = self.state.stage
 
         if current_stage == Stage.NORMAL:
-            if attacker_action == AttackerAction.RECON:
+            if attacker_action == AttackerAction.SCAN:
                 base_prob = 0.7
                 if defender_action == DefenderAction.PATCH:
                     base_prob -= 0.2
@@ -417,7 +417,7 @@ class POSGEnvironment:
                     reward_defender += 2
 
         elif current_stage == Stage.RECON:
-            if attacker_action in (AttackerAction.RECON, AttackerAction.ATTACK):
+            if attacker_action == AttackerAction.SCAN:
                 base_prob = 0.8
                 if defender_action == DefenderAction.PATCH:
                     base_prob -= 0.2
@@ -425,16 +425,16 @@ class POSGEnvironment:
                     base_prob -= 0.15
                 base_prob += self.belief.threat_level * 0.15
                 success = random.random() < base_prob
-                print(f"[DEBUG] RECON→COMPROMISE success prob: {base_prob:.2f}")
+                print(f"[DEBUG] RECON→INFECTION success prob: {base_prob:.2f}")
                 if success:
-                    self.state.stage = Stage.COMPROMISE
+                    self.state.stage = Stage.INFECTION
                     reward_attacker += 2
                 else:
                     reward_defender += 3
                     self.belief.threat_level = min(1.0, self.belief.threat_level + 0.05)
 
-        elif current_stage == Stage.COMPROMISE:
-            if attacker_action == AttackerAction.ATTACK:
+        elif current_stage == Stage.INFECTION:
+            if attacker_action == AttackerAction.EXPLOIT:
                 base_prob = 0.75
                 if defender_action == DefenderAction.PATCH:
                     base_prob -= 0.25
@@ -442,16 +442,16 @@ class POSGEnvironment:
                     base_prob -= 0.2
                 base_prob += self.belief.threat_level * 0.2
                 success = random.random() < base_prob
-                print(f"[DEBUG] COMPROMISE→WEAPONIZE success prob: {base_prob:.2f}")
+                print(f"[DEBUG] INFECTION→INSTALLATION success prob: {base_prob:.2f}")
                 if success:
-                    self.state.stage = Stage.WEAPONIZE
+                    self.state.stage = Stage.INSTALLATION
                     reward_attacker += 3
                 else:
                     reward_defender += 3
                     self.belief.threat_level = min(1.0, self.belief.threat_level + 0.05)
 
-        elif current_stage == Stage.WEAPONIZE:
-            if attacker_action == AttackerAction.ATTACK:
+        elif current_stage == Stage.INSTALLATION:
+            if attacker_action == AttackerAction.PREPARE_PAYLOAD:
                 base_prob = 0.8
                 if defender_action == DefenderAction.PATCH:
                     base_prob -= 0.2
@@ -459,16 +459,16 @@ class POSGEnvironment:
                     base_prob -= 0.25
                 base_prob += self.belief.threat_level * 0.2
                 success = random.random() < base_prob
-                print(f"[DEBUG] WEAPONIZE→EXECUTE success prob: {base_prob:.2f}")
+                print(f"[DEBUG] INSTALLATION→EXECUTION success prob: {base_prob:.2f}")
                 if success:
-                    self.state.stage = Stage.EXECUTE
+                    self.state.stage = Stage.EXECUTION
                     reward_attacker += 4
                 else:
                     reward_defender += 3
                     self.belief.threat_level = min(1.0, self.belief.threat_level + 0.05)
 
-        elif current_stage == Stage.EXECUTE:
-            if attacker_action == AttackerAction.ATTACK:
+        elif current_stage == Stage.EXECUTION:
+            if attacker_action == AttackerAction.EXECUTE_ATTACK:
                 base_prob = 0.65
                 if defender_action == DefenderAction.PATCH:
                     base_prob -= 0.2
@@ -476,7 +476,7 @@ class POSGEnvironment:
                     base_prob -= 0.3
                 base_prob += self.belief.threat_level * 0.25
                 success = random.random() < base_prob
-                print(f"[DEBUG] EXECUTE success prob: {base_prob:.2f}")
+                print(f"[DEBUG] EXECUTION success prob: {base_prob:.2f}")
                 if success:
                     self.state.compromised = True
                     reward_attacker += 6
@@ -494,7 +494,7 @@ class POSGEnvironment:
                 reward_attacker -= 3
 
         # --- BELIEF UPDATE (POSG CORE) ---
-        if attacker_action == AttackerAction.ATTACK:
+        if attacker_action != AttackerAction.IDLE:
             self.belief.attack_prob = min(1.0, self.belief.attack_prob + 0.2)
             self.belief.threat_level = min(1.0, self.belief.threat_level + 0.1)
         else:

@@ -19,8 +19,8 @@ import numpy as np
 class S(IntEnum):
     NORMAL     = 0
     RECON      = 1
-    COMPROMISE = 2
-    WEAPONIZE  = 3
+    INFECTION = 2
+    INSTALLATION  = 3
     EXECUTE    = 4
 
 NUM_STATES = len(S)
@@ -31,8 +31,8 @@ Stage = S
 STATE_NAMES = {
     S.NORMAL:     "Normal",
     S.RECON:      "Recon",
-    S.COMPROMISE: "Compromise",
-    S.WEAPONIZE:  "Weaponize",
+    S.INFECTION: "Infection",
+    S.INSTALLATION:  "Installation",
     S.EXECUTE:    "Execute",
 }
 
@@ -108,8 +108,8 @@ class ExecA(IntEnum):
 ATTACKER_ACTIONS = {
     S.NORMAL:     NormalA,
     S.RECON:      ReconA,
-    S.COMPROMISE: CompA,
-    S.WEAPONIZE:  WeapA,
+    S.INFECTION: CompA,
+    S.INSTALLATION:  WeapA,
     S.EXECUTE:    ExecA,
 }
 
@@ -118,10 +118,10 @@ ATTACKER_ACTION_NAMES = {
     S.RECON:      {ReconA.PING_SWEEP:    "PingSweep",
                    ReconA.PORT_SCAN:     "PortScan",
                    ReconA.SERVICE_PROBE: "ServiceProbe"},
-    S.COMPROMISE: {CompA.MODBUS_READ:    "ModbusRead",
+    S.INFECTION: {CompA.MODBUS_READ:    "ModbusRead",
                    CompA.SSH_BRUTE:      "SSHBrute",
                    CompA.CVE_EXPLOIT:    "CVEExploit"},
-    S.WEAPONIZE:  {WeapA.FDI_PREP:       "FDIPrep",
+    S.INSTALLATION:  {WeapA.FDI_PREP:       "FDIPrep",
                    WeapA.MODBUS_WRITE:   "ModbusWrite",
                    WeapA.BACKDOOR:       "Backdoor"},
     S.EXECUTE:    {ExecA.DNP3_TRIP:      "DNP3Trip",
@@ -165,8 +165,8 @@ class ExecD(IntEnum):
 DEFENDER_ACTIONS = {
     S.NORMAL:     NormalD,
     S.RECON:      ReconD,
-    S.COMPROMISE: CompD,
-    S.WEAPONIZE:  WeapD,
+    S.INFECTION: CompD,
+    S.INSTALLATION:  WeapD,
     S.EXECUTE:    ExecD,
 }
 
@@ -177,11 +177,11 @@ DEFENDER_ACTION_NAMES = {
                    ReconD.HONEYPOT:       "Honeypot",
                    ReconD.RATE_LIMIT:     "RateLimit",
                    ReconD.IDS_HONEY:      "IDS+Honeypot"},
-    S.COMPROMISE: {CompD.MONITOR:         "Monitor",
+    S.INFECTION: {CompD.MONITOR:         "Monitor",
                    CompD.MFA:             "MFA",
                    CompD.IP_WHITELIST:    "IPWhitelist",
                    CompD.PATCH_CVE:       "PatchCVE"},
-    S.WEAPONIZE:  {WeapD.MONITOR:         "Monitor",
+    S.INSTALLATION:  {WeapD.MONITOR:         "Monitor",
                    WeapD.PHYSICS_CHECK:   "PhysicsCheck",
                    WeapD.ISOLATE_IBR:     "IsolateIBR",
                    WeapD.SANDBOX:         "Sandbox"},
@@ -259,18 +259,27 @@ class RawObs:
 # SIMPLIFIED ATTACKER & DEFENDER ACTION ENUMS
 # ─────────────────────────────────────────────────────────────
 
+class Stage(Enum):
+    NORMAL = 0
+    RECON = 1
+    INSTALLATION = 2
+    INFECTION = 3
+    EXECUTION = 4
+    DONE = 5
+
 class AttackerAction(Enum):
-    """High-level attacker action types."""
-    RECON = 0
-    ATTACK = 1
-    IDLE = 2
+    SCAN = 0
+    PREPARE_PAYLOAD = 1
+    EXPLOIT = 2
+    EXECUTE_ATTACK = 3
+    IDLE = 4
 
 
 class DefenderAction(Enum):
-    """High-level defender action types."""
     MONITOR = 0
     PATCH = 1
-    IGNORE = 2
+    BLOCK = 2
+    IGNORE = 3
 
 
 # ─────────────────────────────────────────────────────────────
@@ -283,7 +292,7 @@ class GameState:
     compromised: bool = False
     detected: bool = False
     step: int = 0
-    stage: S = S.RECON
+    stage: Stage = Stage.NORMAL
 
 
 @dataclass

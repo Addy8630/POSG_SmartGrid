@@ -34,7 +34,7 @@ def _build_observation_model() -> np.ndarray:
       1. Replace all values below EPS with EPS
       2. Renormalize each row so it sums exactly to 1
 
-    Row order  : S.NORMAL, S.RECON, S.COMPROMISE, S.WEAPONIZE, S.EXECUTE
+    Row order  : S.NORMAL, S.RECON, S.INFECTION, S.INSTALLATION, S.EXECUTE
     Column order: O.NORMAL_TRAFFIC, HIGH_SYN, SERVICE_PROBE, SUSPICIOUS_LOGIN,
                   MODBUS_WRITE, PHASOR_ANOMALY, DNP3_OPERATE, FREQ_DEVIATION
     """
@@ -114,24 +114,24 @@ def _build_transition_model() -> dict:
         ReconD.IDS_HONEY:  [0.35,  0.60,  0.04,  0.01,  0.00],
     }
 
-    # ── S.COMPROMISE ─────────────────────────────────────────
+    # ── S.INFECTION ─────────────────────────────────────────
     # Compromise: attacker tries to establish foothold
     # Patching CVE stops advance most effectively
     #
     #                        →Norm  →Recon →Comp  →Weap  →Exec
-    T[S.COMPROMISE] = {
+    T[S.INFECTION] = {
         CompD.MONITOR:      [0.05,  0.10,  0.50,  0.30,  0.05],
         CompD.MFA:          [0.10,  0.15,  0.55,  0.15,  0.05],
         CompD.IP_WHITELIST: [0.15,  0.15,  0.60,  0.08,  0.02],
         CompD.PATCH_CVE:    [0.20,  0.20,  0.55,  0.04,  0.01],
     }
 
-    # ── S.WEAPONIZE ──────────────────────────────────────────
+    # ── S.INSTALLATION ──────────────────────────────────────────
     # Weaponize: attacker stages FDI / backdoors
     # Isolating IBR is most effective; return to Normal is harder now
     #
     #                          →Norm  →Recon →Comp  →Weap  →Exec
-    T[S.WEAPONIZE] = {
+    T[S.INSTALLATION] = {
         WeapD.MONITOR:        [0.03,  0.05,  0.10,  0.47,  0.35],
         WeapD.PHYSICS_CHECK:  [0.05,  0.08,  0.12,  0.55,  0.20],
         WeapD.ISOLATE_IBR:    [0.08,  0.10,  0.14,  0.60,  0.08],
@@ -180,8 +180,8 @@ TRANSITION_MODEL = _build_transition_model()
 PREVENTION = {
     S.NORMAL:     [1.0, 2.0],                 # Monitor, LightScan
     S.RECON:      [1.0, 3.0, 2.5, 4.0],      # Monitor, Honeypot, RateLimit, IDS+Honey
-    S.COMPROMISE: [1.0, 3.0, 3.5, 4.5],
-    S.WEAPONIZE:  [1.0, 4.0, 5.0, 4.5],
+    S.INFECTION: [1.0, 3.0, 3.5, 4.5],
+    S.INSTALLATION:  [1.0, 4.0, 5.0, 4.5],
     S.EXECUTE:    [0.0, 5.0, 6.0, 8.0],      # Monitor=0 during Execute (too late)
 }
 
@@ -189,8 +189,8 @@ PREVENTION = {
 DAMAGE = {
     S.NORMAL:     [0.0],                      # no attack
     S.RECON:      [1.0, 2.5, 4.0],           # Ping, PortScan, ServiceProbe
-    S.COMPROMISE: [3.0, 4.0, 6.0],           # ModbusRead, SSHBrute, CVEExploit
-    S.WEAPONIZE:  [5.0, 7.0, 8.0],           # FDIPrep, ModbusWrite, Backdoor
+    S.INFECTION: [3.0, 4.0, 6.0],           # ModbusRead, SSHBrute, CVEExploit
+    S.INSTALLATION:  [5.0, 7.0, 8.0],           # FDIPrep, ModbusWrite, Backdoor
     S.EXECUTE:    [10.0, 12.0, 9.0],         # DNP3Trip, FDICascade, Ransomware
 }
 
@@ -198,8 +198,8 @@ DAMAGE = {
 DEFENSE_COST = {
     S.NORMAL:     [0.5, 1.0],
     S.RECON:      [0.5, 2.0, 1.5, 3.0],
-    S.COMPROMISE: [0.5, 2.0, 1.5, 3.5],
-    S.WEAPONIZE:  [0.5, 2.5, 3.0, 2.5],
+    S.INFECTION: [0.5, 2.0, 1.5, 3.5],
+    S.INSTALLATION:  [0.5, 2.5, 3.0, 2.5],
     S.EXECUTE:    [0.5, 4.0, 3.5, 5.0],
 }
 
@@ -209,8 +209,8 @@ DEFENSE_COST = {
 OPERATIONAL_DISRUPTION = {
     S.NORMAL:     [0.0, 1.0],                 # Monitor=0, LightScan=1
     S.RECON:      [0.5, 1.0, 2.0, 2.5],
-    S.COMPROMISE: [1.0, 2.0, 3.0, 2.5],
-    S.WEAPONIZE:  [1.5, 2.0, 4.0, 3.0],
+    S.INFECTION: [1.0, 2.0, 3.0, 2.5],
+    S.INSTALLATION:  [1.5, 2.0, 4.0, 3.0],
     S.EXECUTE:    [0.5, 1.0, 1.0, 1.0],      # already under attack → low disruption
 }
 
@@ -230,14 +230,14 @@ P_SUCCESS = {
         [0.85,       0.20,    0.35,     0.12],   # ServiceProbe
     ]),
 
-    S.COMPROMISE: np.array([
+    S.INFECTION: np.array([
         #            Monitor  MFA    IPWhitelist  PatchCVE
         [0.80,       0.40,    0.35,  0.30],      # ModbusRead
         [0.85,       0.20,    0.40,  0.25],      # SSHBrute
         [0.90,       0.30,    0.45,  0.10],      # CVEExploit
     ]),
 
-    S.WEAPONIZE: np.array([
+    S.INSTALLATION: np.array([
         #            Monitor  Physics  IsolateIBR  Sandbox
         [0.80,       0.30,    0.20,    0.25],     # FDIPrep
         [0.85,       0.40,    0.15,    0.30],     # ModbusWrite

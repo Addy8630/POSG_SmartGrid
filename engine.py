@@ -5,11 +5,12 @@ from enum import Enum
 from dataclasses import dataclass
 
 class Stage(Enum):
-    RECON = 0
-    WEAPONIZATION = 1
-    COMPROMISE = 2
-    EXECUTION = 3
-    DONE = 4
+    NORMAL = 0
+    RECON = 1
+    INSTALLATION = 2
+    INFECTION = 3
+    EXECUTION = 4
+    DONE = 5
 
 class AttackerAction(Enum):
     SCAN = 0
@@ -26,7 +27,7 @@ class DefenderAction(Enum):
 
 @dataclass
 class GameState:
-    stage: Stage = Stage.RECON
+    stage: Stage = Stage.NORMAL
     compromised: bool = False
     detected: bool = False
     step: int = 0
@@ -58,24 +59,32 @@ class POSGEnvironment:
         # 🔴 STAGE TRANSITIONS
         # =========================
 
+        # --- NORMAL ---
+        if current_stage == Stage.NORMAL:
+            if attacker_action == AttackerAction.SCAN:
+                success = random.random() < 0.9
+                if success:
+                    self.state.stage = Stage.RECON
+                    reward_attacker += 1
+
         # --- RECON ---
-        if current_stage == Stage.RECON:
+        elif current_stage == Stage.RECON:
             if attacker_action == AttackerAction.SCAN:
                 success = random.random() < 0.8
                 if success:
-                    self.state.stage = Stage.WEAPONIZATION
+                    self.state.stage = Stage.INSTALLATION
                     reward_attacker += 2
 
-        # --- WEAPONIZATION ---
-        elif current_stage == Stage.WEAPONIZATION:
+        # --- INSTALLATION ---
+        elif current_stage == Stage.INSTALLATION:
             if attacker_action == AttackerAction.PREPARE_PAYLOAD:
                 success = random.random() < 0.7
                 if success:
-                    self.state.stage = Stage.COMPROMISE
+                    self.state.stage = Stage.INFECTION
                     reward_attacker += 3
 
-        # --- COMPROMISE ---
-        elif current_stage == Stage.COMPROMISE:
+        # --- INFECTION ---
+        elif current_stage == Stage.INFECTION:
             if attacker_action == AttackerAction.EXPLOIT:
                 if defender_action == DefenderAction.PATCH:
                     success = random.random() < 0.2

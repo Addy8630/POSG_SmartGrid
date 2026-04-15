@@ -1,7 +1,7 @@
 import streamlit as st
 from posg_engine import POSGEnvironment
 from posg_types import (
-    Stage, AttackerAction, DefenderAction,
+    Stage, S, AttackerAction, DefenderAction,
     ATTACKER_ACTION_NAMES, DEFENDER_ACTION_NAMES,
 )
 
@@ -10,10 +10,11 @@ st.set_page_config(page_title="Smart Grid POSG", layout="wide")
 
 def generate_stage_insight(stage: Stage, attacker_label: str, defender_label: str) -> str:
     stage_text = {
+        Stage.NORMAL: "Everything is normal: no active attack has been detected yet.",
         Stage.RECON: "The attacker is in Reconnaissance, gathering intel on the network and probing targets.",
-        Stage.COMPROMISE: "The attacker is in Compromise, trying to penetrate defenses and gain foothold.",
-        Stage.WEAPONIZE: "The attacker is in Weaponization, preparing the payload or malicious tool for the attack.",
-        Stage.EXECUTE: "The attacker is in Execution, attempting to carry out the attack and impact systems.",
+        Stage.INFECTION: "The attacker is in Infection, trying to penetrate defenses and gain foothold.",
+        Stage.INSTALLATION: "The attacker is in Installation, preparing the payload or malicious tool for the attack.",
+        Stage.EXECUTION: "The attacker is in Execution, attempting to carry out the attack and impact systems.",
     }.get(stage, "The game is in an unknown stage.")
 
     return (
@@ -61,22 +62,24 @@ col3.metric("Defender", st.session_state.score_d)
 st.markdown("### Kill Chain")
 
 stage_map = {
+    Stage.NORMAL:     ("NORMAL",     "#39a9dc"),
     Stage.RECON:      ("RECON",      "#0f6cff"),
-    Stage.COMPROMISE: ("COMP",       "#e14c4c"),
-    Stage.WEAPONIZE:  ("WEAPONIZE",  "#f5a623"),
-    Stage.EXECUTE:    ("EXEC",       "#ffcc00"),
+    Stage.INFECTION: ("INFECTION",       "#e14c4c"),
+    Stage.INSTALLATION:  ("INSTALLATION",  "#f5a623"),
+    Stage.EXECUTION:    ("EXEC",       "#ffcc00"),
 }
 
-stage_cols = st.columns(4)
+stage_cols = st.columns(len(stage_map))
 for idx, (stage, (label, color)) in enumerate(stage_map.items()):
     style = f"background:{'#11233c' if state.stage != stage else color}; padding:12px; border-radius:10px; color:#fff; text-align:center;"
     stage_cols[idx].markdown(f"<div style='{style}'><strong>{label}</strong></div>", unsafe_allow_html=True)
 
 progress_value = {
+    Stage.NORMAL:     0.0,
     Stage.RECON:      0.2,
-    Stage.COMPROMISE: 0.45,
-    Stage.WEAPONIZE:  0.7,
-    Stage.EXECUTE:    0.95,
+    Stage.INFECTION: 0.45,
+    Stage.INSTALLATION:  0.7,
+    Stage.EXECUTION:    0.95,
 }.get(state.stage, 0.0)
 st.progress(progress_value)
 
@@ -129,8 +132,19 @@ with middle:
     st.markdown("---")
     st.markdown("## 🎯 Payoff Matrix")
 
-    attacker_labels = list(ATTACKER_ACTION_NAMES[state.stage].values())
-    defender_labels = list(DEFENDER_ACTION_NAMES[state.stage].values())
+    stage_key = None
+    if state.stage != Stage.DONE and state.stage.value in [s.value for s in S]:
+        stage_key = S(state.stage.value)
+
+    if state.stage == Stage.NORMAL:
+        attacker_labels = ["Scan", "Idle"]
+        defender_labels = ["Monitor", "LightScan"]
+    elif stage_key is not None:
+        attacker_labels = list(ATTACKER_ACTION_NAMES[stage_key].values())
+        defender_labels = list(DEFENDER_ACTION_NAMES[stage_key].values())
+    else:
+        attacker_labels = []
+        defender_labels = []
 
     if not attacker_labels or not defender_labels:
         st.write("No actions available for this stage.")
@@ -161,21 +175,39 @@ with middle:
 with right:
     st.markdown("## ⚔️ Actions")
 
-    attacker_options = [name for name in ATTACKER_ACTION_NAMES[state.stage].values()]
-    defender_options = [name for name in DEFENDER_ACTION_NAMES[state.stage].values()]
+    if state.stage == Stage.NORMAL:
+        attacker_options = ["Scan", "Idle"]
+        defender_options = ["Monitor", "LightScan"]
+    elif state.stage != Stage.DONE and state.stage.value in [s.value for s in S]:
+        stage_key = S(state.stage.value)
+        attacker_options = list(ATTACKER_ACTION_NAMES[stage_key].values())
+        defender_options = list(DEFENDER_ACTION_NAMES[stage_key].values())
+    else:
+        attacker_options = ["Idle"]
+        defender_options = ["Monitor"]
 
     attacker_action_label = st.selectbox("Attacker", attacker_options)
     defender_action_label = st.selectbox("Defender", defender_options)
 
     def _map_attacker_action(label, stage):
-        if stage == Stage.RECON:
-            return AttackerAction.RECON
-        if stage in (Stage.COMPROMISE, Stage.WEAPONIZE, Stage.EXECUTE):
-            return AttackerAction.ATTACK
+        if stage in (Stage.NORMAL, Stage.RECON):
+            return AttackerAction.SCAN
+        if stage == Stage.INSTALLATION:
+            return AttackerAction.PREPARE_PAYLOAD
+        if stage == Stage.INFECTION:
+            return AttackerAction.EXPLOIT
+        if stage == Stage.EXECUTION:
+            return AttackerAction.EXECUTE_ATTACK
         return AttackerAction.IDLE
 
     def _map_defender_action(label):
-        return DefenderAction.MONITOR if label == "Monitor" else DefenderAction.PATCH
+        if label in {"Monitor", "LightScan"}:
+            return DefenderAction.MONITOR
+        if "Patch" in label or label == "MFA":
+            return DefenderAction.PATCH
+        if "Block" in label or "Rollback" in label or "Isolate" in label:
+            return DefenderAction.BLOCK
+        return DefenderAction.IGNORE
 
     st.markdown("### 🤖 AI Stage Insight")
     insight_text = generate_stage_insight(state.stage, attacker_action_label, defender_action_label)

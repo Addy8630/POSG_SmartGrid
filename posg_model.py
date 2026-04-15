@@ -5,11 +5,12 @@ from enum import Enum
 from dataclasses import dataclass
 
 class Stage(Enum):
-    RECON = 0
-    WEAPONIZATION = 1
-    COMPROMISE = 2
-    EXECUTION = 3
-    DONE = 4
+    NORMAL = 0
+    RECON = 1
+    INSTALLATION = 2
+    INFECTION = 3
+    EXECUTION = 4
+    DONE = 5
 
 class AttackerAction(Enum):
     SCAN = 0
@@ -26,7 +27,7 @@ class DefenderAction(Enum):
 
 @dataclass
 class GameState:
-    stage: Stage = Stage.RECON
+    stage: Stage = Stage.NORMAL
     compromised: bool = False
     detected: bool = False
     step: int = 0
@@ -36,11 +37,13 @@ class BeliefState:
     threat_level: float = 0.3
 
 def attacker_policy(stage):
-    if stage == Stage.RECON:
+    if stage == Stage.NORMAL:
         return AttackerAction.SCAN
-    elif stage == Stage.WEAPONIZATION:
+    elif stage == Stage.RECON:
+        return AttackerAction.SCAN
+    elif stage == Stage.INSTALLATION:
         return AttackerAction.PREPARE_PAYLOAD
-    elif stage == Stage.COMPROMISE:
+    elif stage == Stage.INFECTION:
         return AttackerAction.EXPLOIT
     elif stage == Stage.EXECUTION:
         return AttackerAction.EXECUTE_ATTACK

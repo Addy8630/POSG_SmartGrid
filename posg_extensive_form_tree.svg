@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1280" viewBox="0 0 1800 1280" role="img" aria-labelledby="title desc">
+  <title id="title">POSG extensive-form game tree</title>
+  <desc id="desc">Partially observable stochastic game tree for smart-grid attacker defender interactions.</desc>
+  <defs>
+    <style>
+      .bg{fill:#fff}.ttl{font:700 27px Georgia,serif;fill:#111}.cap{font:17px Georgia,serif;fill:#111}.lab{font:15px Arial,sans-serif;fill:#111}.small{font:13px Arial,sans-serif;fill:#111}.tiny{font:12px Arial,sans-serif;fill:#111}.node{fill:#fff;stroke:#111;stroke-width:2}.chance{fill:#f1f5f9;stroke:#111;stroke-width:2}.terminal{fill:#111}.edge{stroke:#111;stroke-width:2;fill:none}.info{stroke:#475569;stroke-width:2;stroke-dasharray:7 6;fill:none}.box{fill:#fafafa;stroke:#111;stroke-width:1.3}.blue{fill:#1d4ed8}.white{fill:#fff}.accent{fill:#eef2ff;stroke:#3730a3;stroke-width:1.5}
+    </style>
+  </defs>
+  <rect class="bg" width="1800" height="1280"/>
+  <rect x="20" y="20" width="1760" height="1220" fill="none" stroke="#111" stroke-width="2"/>
+  <text x="70" y="70" class="ttl">POSG Smart-Grid Attacker–Defender Game Tree</text>
+  <text x="70" y="98" class="lab">One decision epoch: hidden attack stage → simultaneous actions → stochastic transition → defender observation → updated belief.</text>
+
+  <!-- legend -->
+  <rect x="1150" y="47" width="570" height="66" class="box"/><circle cx="1180" cy="70" r="13" class="chance"/><text x="1203" y="75" class="small">chance / hidden state</text><circle cx="1377" cy="70" r="13" class="node"/><text x="1400" y="75" class="small">decision node</text><path d="M1540 70h45" class="info"/><text x="1595" y="75" class="small">information set</text>
+
+  <!-- Stage 0 chance -->
+  <text x="895" y="152" text-anchor="middle" class="lab">Hidden current security stage</text>
+  <circle cx="900" cy="188" r="31" class="chance"/><text x="900" y="194" text-anchor="middle" class="lab">C₀</text>
+  <text x="942" y="178" class="tiny">b(s)=Pr(s | o₁:t)</text><text x="942" y="196" class="tiny">s ∈ {N,R,I,W,E}</text>
+  <path d="M874 205L295 305M887 216L650 305M900 219V305M913 216L1150 305M926 205L1505 305" class="edge"/>
+  <text x="475" y="248" class="tiny">b(N)</text><text x="755" y="248" class="tiny">b(R)</text><text x="916" y="260" class="tiny">b(I)</text><text x="1035" y="248" class="tiny">b(W)</text><text x="1320" y="248" class="tiny">b(E)</text>
+
+  <!-- actual stages -->
+  <g>
+    <circle cx="295" cy="330" r="29" class="node"/><circle cx="650" cy="330" r="29" class="node"/><circle cx="900" cy="330" r="29" class="node"/><circle cx="1150" cy="330" r="29" class="node"/><circle cx="1505" cy="330" r="29" class="node"/>
+    <text x="295" y="336" text-anchor="middle" class="lab">N</text><text x="650" y="336" text-anchor="middle" class="lab">R</text><text x="900" y="336" text-anchor="middle" class="lab">I</text><text x="1150" y="336" text-anchor="middle" class="lab">W</text><text x="1505" y="336" text-anchor="middle" class="lab">E</text>
+    <text x="295" y="376" text-anchor="middle" class="small">Normal</text><text x="650" y="376" text-anchor="middle" class="small">Recon</text><text x="900" y="376" text-anchor="middle" class="small">Infection</text><text x="1150" y="376" text-anchor="middle" class="small">Installation</text><text x="1505" y="376" text-anchor="middle" class="small">Execute</text>
+  </g>
+
+  <!-- defender imperfect information -->
+  <path d="M295 359V440M650 359V440M900 359V440M1150 359V440M1505 359V440" class="edge"/>
+  <rect x="210" y="440" width="1375" height="100" rx="12" class="info"/>
+  <text x="240" y="470" class="lab">Defender information set</text><text x="240" y="495" class="small">The defender does not observe the true stage. It selects a_D using belief b rather than the hidden state s.</text><text x="240" y="520" class="small">π_D(a_D | b); examples: LightScan, IDS+Honeypot, PatchCVE, IsolateIBR/Sandbox, Block+Rollback.</text>
+  <path d="M900 540V598" class="edge"/>
+  <circle cx="900" cy="625" r="31" class="node"/><text x="900" y="631" text-anchor="middle" class="lab">D</text><text x="946" y="620" class="tiny">defender action a_D</text>
+
+  <!-- two defender choices representative -->
+  <path d="M875 643L640 730M925 643L1160 730" class="edge"/><text x="735" y="685" class="small">a_D = monitor / deploy defense</text><text x="1015" y="685" class="small">a_D = targeted / containment defense</text>
+  <circle cx="640" cy="755" r="28" class="node"/><circle cx="1160" cy="755" r="28" class="node"/><text x="640" y="761" text-anchor="middle" class="lab">A</text><text x="1160" y="761" text-anchor="middle" class="lab">A</text>
+  <text x="640" y="800" text-anchor="middle" class="tiny">attacker action a_A</text><text x="1160" y="800" text-anchor="middle" class="tiny">attacker action a_A</text>
+  <!-- attacker information linkage as simultaneous choice -->
+  <path d="M640 710H1160" class="info"/><text x="900" y="704" text-anchor="middle" class="tiny">simultaneous-action information set: attacker does not condition on current a_D</text>
+
+  <!-- actions -->
+  <path d="M617 772L420 850M640 783V850M663 772L835 850M1137 772L965 850M1160 783V850M1183 772L1380 850" class="edge"/>
+  <text x="468" y="820" class="tiny">a_A: probe / exploit</text><text x="657" y="830" class="tiny">a_A: advance</text><text x="750" y="820" class="tiny">a_A: abort / low impact</text><text x="989" y="820" class="tiny">a_A: exploit / write</text><text x="1178" y="830" class="tiny">a_A: execute impact</text><text x="1295" y="820" class="tiny">a_A: evade / persist</text>
+  <g><circle cx="420" cy="875" r="23" class="chance"/><circle cx="640" cy="875" r="23" class="chance"/><circle cx="835" cy="875" r="23" class="chance"/><circle cx="965" cy="875" r="23" class="chance"/><circle cx="1160" cy="875" r="23" class="chance"/><circle cx="1380" cy="875" r="23" class="chance"/></g>
+  <g text-anchor="middle" class="small"><text x="420" y="880">C₁</text><text x="640" y="880">C₁</text><text x="835" y="880">C₁</text><text x="965" y="880">C₁</text><text x="1160" y="880">C₁</text><text x="1380" y="880">C₁</text></g>
+  <text x="900" y="923" text-anchor="middle" class="lab">Stochastic transition: T(s′ | s, a_D)</text>
+
+  <!-- next states -->
+  <path d="M402 890L300 970M438 890L515 970M622 890L580 970M658 890L740 970M817 890L790 970M853 890L905 970M947 890L1020 970M983 890L1100 970M1142 890L1210 970M1178 890L1305 970M1362 890L1430 970M1398 890L1530 970" class="edge"/>
+  <g><circle cx="300" cy="990" r="20" class="node"/><circle cx="515" cy="990" r="20" class="node"/><circle cx="580" cy="990" r="20" class="node"/><circle cx="740" cy="990" r="20" class="node"/><circle cx="790" cy="990" r="20" class="node"/><circle cx="905" cy="990" r="20" class="node"/><circle cx="1020" cy="990" r="20" class="node"/><circle cx="1100" cy="990" r="20" class="node"/><circle cx="1210" cy="990" r="20" class="node"/><circle cx="1305" cy="990" r="20" class="node"/><circle cx="1430" cy="990" r="20" class="node"/><circle cx="1530" cy="990" r="20" class="node"/></g>
+  <g text-anchor="middle" class="small"><text x="300" y="995">N</text><text x="515" y="995">R</text><text x="580" y="995">N</text><text x="740" y="995">I</text><text x="790" y="995">R</text><text x="905" y="995">W</text><text x="1020" y="995">I</text><text x="1100" y="995">E</text><text x="1210" y="995">W</text><text x="1305" y="995">E</text><text x="1430" y="995">W</text><text x="1530" y="995">E</text></g>
+  <text x="360" y="948" class="tiny">T(N|·)</text><text x="462" y="948" class="tiny">T(R|·)</text><text x="560" y="948" class="tiny">T(N|·)</text><text x="690" y="948" class="tiny">T(I|·)</text><text x="760" y="948" class="tiny">T(R|·)</text><text x="870" y="948" class="tiny">T(W|·)</text><text x="985" y="948" class="tiny">T(I|·)</text><text x="1065" y="948" class="tiny">T(E|·)</text><text x="1175" y="948" class="tiny">T(W|·)</text><text x="1270" y="948" class="tiny">T(E|·)</text><text x="1390" y="948" class="tiny">T(W|·)</text><text x="1485" y="948" class="tiny">T(E|·)</text>
+
+  <!-- observed emissions and terminal continuation -->
+  <path d="M300 1010V1060M515 1010V1060M580 1010V1060M740 1010V1060M790 1010V1060M905 1010V1060M1020 1010V1060M1100 1010V1060M1210 1010V1060M1305 1010V1060M1430 1010V1060M1530 1010V1060" class="edge"/>
+  <rect x="230" y="1060" width="1340" height="70" rx="10" class="accent"/><text x="255" y="1090" class="lab">Observation and belief update</text><text x="255" y="1115" class="small">o′ ∼ O(o′|s′)  →  b′(s′) ∝ O(o′|s′) Σₛ b(s)T(s′|s,a_D)  →  next POSG decision epoch</text>
+  <path d="M900 1130V1170" class="edge"/><circle cx="900" cy="1195" r="16" class="terminal"/><text x="930" y="1200" class="small">Continuation value: V(b′) = max π_D min π_A E[U_D + γV(b′)]</text>
+  <text x="70" y="1267" class="cap">Fig. POSG game tree. Dashed sets represent imperfect information; chance nodes encode state transitions and defender observations. Unlike a fully observable sequential tree, the defender’s policy is conditioned on belief b.</text>
+</svg>

@@ -4,6 +4,7 @@ from posg_types import (
     Stage, S, AttackerAction, DefenderAction,
     ATTACKER_ACTION_NAMES, DEFENDER_ACTION_NAMES,
 )
+from posg_models import get_payoff
 
 st.set_page_config(page_title="Smart Grid POSG", layout="wide")
 
@@ -59,20 +60,32 @@ col3.metric("Defender", st.session_state.score_d)
 # =============================
 # KILL CHAIN NAV BAR
 # =============================
-st.markdown("### Kill Chain")
+st.markdown("### Cyber Kill Chain")
 
 stage_map = {
     Stage.NORMAL:     ("NORMAL",     "#39a9dc"),
     Stage.RECON:      ("RECON",      "#0f6cff"),
     Stage.INFECTION: ("INFECTION",       "#e14c4c"),
     Stage.INSTALLATION:  ("INSTALLATION",  "#f5a623"),
-    Stage.EXECUTION:    ("EXEC",       "#ffcc00"),
+    Stage.EXECUTION:    ("EXECUTION",  "#ffcc00"),
 }
 
-stage_cols = st.columns(len(stage_map))
+chain_parts = []
 for idx, (stage, (label, color)) in enumerate(stage_map.items()):
-    style = f"background:{'#11233c' if state.stage != stage else color}; padding:12px; border-radius:10px; color:#fff; text-align:center;"
-    stage_cols[idx].markdown(f"<div style='{style}'><strong>{label}</strong></div>", unsafe_allow_html=True)
+    background = color if state.stage == stage else "#11233c"
+    chain_parts.append(
+        f"<div style='flex:1; background:{background}; padding:12px; border-radius:10px; "
+        f"color:#fff; text-align:center; white-space:nowrap;'><strong>{label}</strong></div>"
+    )
+    if idx < len(stage_map) - 1:
+        chain_parts.append(
+            "<div style='color:#8fb8d3; font-size:26px; font-weight:bold; padding:0 10px;'>&rarr;</div>"
+        )
+
+st.markdown(
+    "<div style='display:flex; align-items:center; width:100%;'>" + "".join(chain_parts) + "</div>",
+    unsafe_allow_html=True,
+)
 
 progress_value = {
     Stage.NORMAL:     0.0,
@@ -127,19 +140,28 @@ with left:
 with middle:
     st.markdown("## 🧠 Defender Belief")
     st.progress(env.belief.threat_level)
-    st.write(f"Threat Level: {env.belief.threat_level:.2f}")
+    threat = env.belief.threat_level
+    severity = (
+        "Critical" if threat >= 0.90 else
+        "High" if threat >= 0.70 else
+        "Medium" if threat >= 0.40 else
+        "Low"
+    )
+    st.write(f"Threat Level: {threat:.0%} ({severity})")
 
     st.markdown("---")
     st.markdown("## 🎯 Payoff Matrix")
 
-    stage_key = None
-    if state.stage != Stage.DONE and state.stage.value in [s.value for s in S]:
-        stage_key = S(state.stage.value)
+    stage_map = {
+        Stage.NORMAL: S.NORMAL,
+        Stage.RECON: S.RECON,
+        Stage.INFECTION: S.INFECTION,
+        Stage.INSTALLATION: S.INSTALLATION,
+        Stage.EXECUTION: S.EXECUTE,
+    }
+    stage_key = stage_map.get(state.stage)
 
-    if state.stage == Stage.NORMAL:
-        attacker_labels = ["Scan", "Idle"]
-        defender_labels = ["Monitor", "LightScan"]
-    elif stage_key is not None:
+    if stage_key is not None:
         attacker_labels = list(ATTACKER_ACTION_NAMES[stage_key].values())
         defender_labels = list(DEFENDER_ACTION_NAMES[stage_key].values())
     else:
@@ -149,14 +171,19 @@ with middle:
     if not attacker_labels or not defender_labels:
         st.write("No actions available for this stage.")
     else:
-        header = "| Action | " + " | ".join(defender_labels) + " |"
-        separator = "|---" + "|---" * len(defender_labels) + "|"
-        st.write(header)
-        st.write(separator)
-
-        for row_idx, a_label in enumerate(attacker_labels):
-            row_values = [f"A{row_idx + 1}/D{col_idx + 1}" for col_idx in range(len(defender_labels))]
-            st.write("| " + a_label + " | " + " | ".join(row_values) + " |")
+        payoff_matrix = get_payoff(stage_key)
+        payoff_table = {"Attacker action": attacker_labels}
+        for defender_idx, defender_label in enumerate(defender_labels):
+            payoff_table[defender_label] = [
+                f"{payoff:+.2f}" for payoff in payoff_matrix[:, defender_idx]
+            ]
+        st.dataframe(
+            payoff_table,
+            hide_index=True,
+            use_container_width=True,
+            height=36 + 35 * len(attacker_labels),
+        )
+        st.caption("Defender payoff: higher values are better for the defender.")
 
     st.markdown("---")
     action_buttons = st.container()

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="860" viewBox="0 0 1500 860" role="img" aria-labelledby="title desc">
+  <title id="title">Attacker and defender utility by POSG stage</title>
+  <desc id="desc">Line chart of immediate Markov-equilibrium utilities across Normal, Recon, Infection, Installation, and Execute stages.</desc>
+  <style>
+    .title{font:700 29px "Times New Roman",Times,serif;fill:#000}.sub{font:15px "Times New Roman",Times,serif;fill:#000}.axis{stroke:#111827;stroke-width:2}.grid{stroke:#cbd5e1;stroke-width:1;stroke-dasharray:5 6}.tick{font:14px "Times New Roman",Times,serif;fill:#000}.stage{font:700 15px "Times New Roman",Times,serif;fill:#000}.label{font:700 17px "Times New Roman",Times,serif;fill:#000}.note{font:14px "Times New Roman",Times,serif;fill:#000}.def{stroke:#047857;stroke-width:4;fill:none}.att{stroke:#dc2626;stroke-width:4;fill:none;stroke-dasharray:10 7}.dpt{fill:#047857;stroke:white;stroke-width:3}.apt{fill:#dc2626;stroke:white;stroke-width:3}.value{font:700 14px "Times New Roman",Times,serif;fill:#000}
+  </style>
+  <rect width="1500" height="860" fill="#fff"/>
+  <text x="750" y="60" text-anchor="middle" class="title">Markov-Equilibrium Utility at Each Stage</text>
+
+  <!-- chart region x=170..1370 y=150..650; utility range -4.5..4.5 -->
+  <g>
+    <line x1="170" y1="150" x2="1370" y2="150" class="grid"/><line x1="170" y1="206" x2="1370" y2="206" class="grid"/><line x1="170" y1="261" x2="1370" y2="261" class="grid"/><line x1="170" y1="317" x2="1370" y2="317" class="grid"/><line x1="170" y1="372" x2="1370" y2="372" class="grid"/><line x1="170" y1="428" x2="1370" y2="428" class="grid"/><line x1="170" y1="483" x2="1370" y2="483" class="grid"/><line x1="170" y1="539" x2="1370" y2="539" class="grid"/><line x1="170" y1="594" x2="1370" y2="594" class="grid"/><line x1="170" y1="650" x2="1370" y2="650" class="grid"/>
+    <line x1="170" y1="150" x2="170" y2="650" class="axis"/><line x1="170" y1="650" x2="1370" y2="650" class="axis"/>
+    <g class="tick" text-anchor="end"><text x="155" y="155">4.5</text><text x="155" y="211">3.5</text><text x="155" y="266">2.5</text><text x="155" y="322">1.5</text><text x="155" y="377">0.5</text><text x="155" y="433">−0.5</text><text x="155" y="488">−1.5</text><text x="155" y="544">−2.5</text><text x="155" y="599">−3.5</text><text x="155" y="655">−4.5</text></g>
+    <text x="45" y="420" class="label" transform="rotate(-90 45 420)">Player utility</text><text x="770" y="735" text-anchor="middle" class="label">POSG Game Stages</text>
+  </g>
+
+  <!-- DEFENDER: N 1.20; R 1.27; I 1.00; W .736; E 3.76 -->
+  <polyline points="250,333 525,329 800,344 1075,358 1350,191" class="def"/>
+  <!-- ATTACKER = - DEFENDER -->
+  <polyline points="250,467 525,471 800,456 1075,442 1350,609" class="att"/>
+  <g><circle cx="250" cy="333" r="8" class="dpt"/><circle cx="525" cy="329" r="8" class="dpt"/><circle cx="800" cy="344" r="8" class="dpt"/><circle cx="1075" cy="358" r="8" class="dpt"/><circle cx="1350" cy="191" r="8" class="dpt"/><circle cx="250" cy="467" r="8" class="apt"/><circle cx="525" cy="471" r="8" class="apt"/><circle cx="800" cy="456" r="8" class="apt"/><circle cx="1075" cy="442" r="8" class="apt"/><circle cx="1350" cy="609" r="8" class="apt"/></g>
+  <g class="value"><text x="250" y="316" text-anchor="middle" fill="#000">1.20</text><text x="525" y="312" text-anchor="middle" fill="#000">1.27</text><text x="800" y="327" text-anchor="middle" fill="#000">1.00</text><text x="1075" y="341" text-anchor="middle" fill="#000">0.74</text><text x="1350" y="174" text-anchor="middle" fill="#000">3.76</text><text x="250" y="493" text-anchor="middle" fill="#000">−1.20</text><text x="525" y="497" text-anchor="middle" fill="#000">−1.27</text><text x="800" y="482" text-anchor="middle" fill="#000">−1.00</text><text x="1075" y="468" text-anchor="middle" fill="#000">−0.74</text><text x="1350" y="635" text-anchor="middle" fill="#000">−3.76</text></g>
+  <g text-anchor="middle"><text x="250" y="684" class="stage">Normal</text><text x="525" y="684" class="stage">Recon</text><text x="800" y="684" class="stage">Infection</text><text x="1075" y="684" class="stage">Installation</text><text x="1350" y="684" class="stage">Execute</text></g>
+  <g><line x1="500" y1="782" x2="565" y2="782" class="def"/><text x="580" y="788" class="tick">Defender utility U_D</text><line x1="820" y1="782" x2="885" y2="782" class="att"/><text x="900" y="788" class="tick">Attacker utility U_A = −U_D</text></g>
+  <text x="110" y="829" class="note">Values are the immediate stage-equilibrium payoffs. Attacker utility uses the zero-sum proxy.</text>
+</svg>

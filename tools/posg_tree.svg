@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1400" viewBox="0 0 1200 1400">
+  <style>
+    .node { fill: #d0e7ff; stroke: #000; stroke-width: 2; }
+    .label { font-family: Arial, sans-serif; font-size: 16px; }
+    .small { font-size: 14px; }
+    .arrow { fill: none; stroke: #000; stroke-width: 2; marker-end: url(#arrowhead); }
+  </style>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000" />
+    </marker>
+  </defs>
+  <rect x="440" y="40" width="320" height="80" class="node" />
+  <text x="600" y="75" class="label" text-anchor="middle">NORMAL</text>
+  <rect x="240" y="220" width="320" height="80" class="node" />
+  <text x="400" y="255" class="label" text-anchor="middle">RECON</text>
+  <rect x="240" y="440" width="320" height="80" class="node" />
+  <text x="400" y="475" class="label" text-anchor="middle">INFECTION</text>
+  <rect x="240" y="660" width="320" height="80" class="node" />
+  <text x="400" y="695" class="label" text-anchor="middle">INSTALLATION</text>
+  <rect x="240" y="880" width="320" height="80" class="node" />
+  <text x="400" y="915" class="label" text-anchor="middle">EXECUTE</text>
+
+  <path d="M600 120 L600 220" class="arrow" />
+  <text x="620" y="175" class="small">Recon 0.10 (Monitor)</text>
+  <path d="M400 300 L400 440" class="arrow" />
+  <text x="420" y="360" class="small">Compromise 0.30 (Monitor)</text>
+  <path d="M400 520 L400 660" class="arrow" />
+  <text x="420" y="580" class="small">Weaponize 0.30 (Monitor)</text>
+  <path d="M400 740 L400 880" class="arrow" />
+  <text x="420" y="800" class="small">Execute 0.35 (Monitor)</text>
+
+  <path d="M280 260 C180 260 180 80 280 80" class="arrow" />
+  <text x="180" y="170" class="small">Return 0.10</text>
+  <path d="M280 480 C180 480 180 80 280 80" class="arrow" />
+  <text x="180" y="290" class="small">Return 0.05</text>
+  <path d="M280 700 C180 700 180 80 280 80" class="arrow" />
+  <text x="180" y="410" class="small">Return 0.03</text>
+  <path d="M280 920 C180 920 180 80 280 80" class="arrow" />
+  <text x="180" y="530" class="small">Return 0.01</text>
+
+  <text x="40" y="1020" class="label">Stage notes:</text>
+  <text x="40" y="1050" class="small">NORMAL: NoAttack only; Monitor/LightScan; Recon is low-probality</text>
+  <text x="40" y="1075" class="small">RECON: PingSweep/PortScan/ServiceProbe; IDS+Honey is strongest</text>
+  <text x="40" y="1100" class="small">INFECTION: ModbusRead/SSHBrute/CVEExploit; PatchCVE is strongest</text>
+  <text x="40" y="1125" class="small">INSTALLATION: FDIPrep/ModbusWrite/Backdoor; IsolateIBR is strongest</text>
+  <text x="40" y="1150" class="small">EXECUTE: DNP3Trip/FDICascade/Ransomware; Block+Rollback is strongest</text>
+  <text x="40" y="1175" class="small">Payoff formula: Vp - P_success * Vi - 0.5*Cost - 0.3*Disruption</text>
+</svg>
